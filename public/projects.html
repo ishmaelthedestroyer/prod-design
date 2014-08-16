@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>Prod Design</title>
+    <link rel='stylesheet' href='/assets/vendor/noToolbox/dist/css/noToolbox.css' />
+    <link rel='stylesheet' href='/assets/vendor/bootflat/css/bootflat-square.css' />
+    <link rel='stylesheet' href='/assets/css/app.css' />
+  </head>
+  <body data-ng-controller='AppCtrl'>
+    <div class='container wide' style='display: table;'>
+      <div class='row'>
+
+        <div class='col-xs-12 content-left'>
+
+          <header class='header'>
+            <h1>My Projects</h1>
+          </header>
+
+          <div class='project-toolbar col-xs-8 col-xs-offset-2'>
+            <button class='btn btn-sm btn-square btn-default'
+               data-ng-click='newProject()'>
+              <i class='glyphicon glyphicon-plus'>
+              </i>
+              <span>
+                New Project
+              </span>
+            </button>
+
+            <span class='objective-filter pull-right'>
+              <label style='cursor: pointer;'>
+                <input type='checkbox' data-ng-model='showArchived' />
+                Show Archived
+              </label>
+            </span>
+
+          </div>
+
+          <div class='objective-header col-xs-8 col-xs-offset-2'>
+            <p>
+              <span class='pull-left'>
+                Title
+              </span>
+              <span class='pull-right'>
+                Edit
+              </span>
+            </p>
+          </div>
+
+          <ul class='project-list col-xs-8 col-xs-offset-2'>
+            <li data-ng-repeat='project in projects |
+                orderBy : "created" : true'
+              data-ng-class='{archived: project.archived}'
+              data-ng-hide='!showArchived && project.archived'>
+
+              <div class="panel panel-default"
+                data-ng-click="changeFocus(item, 'project')"
+                style='padding: 0; margin-bottom: 10px;'>
+                <div class="panel-heading">
+
+                  <h4 class="panel-title">
+
+                    <span class='project-title'>
+                      <b>{{project.title}}</b>
+                    </span>
+
+                    <span class='project-controls'>
+                      <i class='glyphicon glyphicon-edit edit-icon'
+                        data-ng-click='setFocus(project)'
+                        data-toggle-sidebar='open'></i>
+
+                      <span class='text-divider-small text-bold'></span>
+
+                      <i class='glyphicon glyphicon-remove'
+                        style='cursor: pointer;'
+                        data-ng-click='deleteItem(project, "project")'>
+                      </i>
+                    </span>
+                  </h4>
+                </div>
+              </div>
+
+            </li>
+          </ul>
+        </div>
+
+        <div class='col-xs-0 content-right'
+          data-ng-hide='!focus'>
+
+          <div class='toolbar col-xs-10 col-xs-offset-1'>
+            <button class='btn btn-sm btn-square btn-danger'
+              data-ng-click='focus=null'
+              data-toggle-sidebar>
+              <i class='glyphicon glyphicon-remove'></i>
+              Close
+            </button>
+
+            <button class='btn btn-sm btn-square btn-info'
+              data-toggle-sidebar>
+              <i class='glyphicon glyphicon-refresh'></i>
+              Save Changes
+            </button>
+          </div>
+
+          <header class='header'>
+            <div class='clear-10'></div>
+            <h3>{{focus.title}}</h3>
+
+            <div class='clear-10'></div>
+
+            <a href='#'>Go to Project</a>
+          </header>
+
+          <div class='col-xs-10 col-xs-offset-1'>
+            <h4 class='pull-left text-bold'>
+              Basic
+            </h4>
+
+            <div class='clear-div'></div>
+          </div>
+
+          <div class='col-xs-10 col-xs-offset-1 edit-container'>
+
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-3 control-label">
+                Title
+                </label>
+                <div class="col-sm-9">
+                  <input type="text"
+                    class="form-control form-control-square"
+                    placeholder="Title"
+                    data-ng-model='focus.title'>
+                </div>
+              </div>
+
+              <div class='form-group'>
+                <label class='col-xs-3 control-label'>
+                  Archived
+                </label>
+                <div class='col-xs-9'
+                  style='text-align: center; padding-top: 5px;'>
+                    <input type='checkbox'
+                      data-ng-model='focus.archived' />
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class='clear-20'></div>
+          <hr style='border-top: 1px dashed #222; width: 80%; margin: 0 auto;' />
+          <div class='clear-20'></div>
+
+          <div class='col-xs-10 col-xs-offset-1'>
+            <h4 class='pull-left text-bold'>
+              Participants
+            </h4>
+
+            <div class='clear-div'></div>
+          </div>
+
+          <div class='col-xs-10 col-xs-offset-1 edit-container'>
+            <table class='table table-hover'>
+              <thead>
+                <tr>
+                  <th style='width: 15%; text-align: center;'> - </th>
+                  <th style='width: 35%' class='dropdown'>
+                    <a href='#'>
+                      Add User
+                    </a>
+                  </th>
+                  <th style='width: 35%; text-align: center;'> - </th>
+                  <th style='width: 15%; text-align: center;'> - </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-ng-repeat='item in focus.users |
+                  mapUserList'>
+                  <td>
+                    <img class='img-circle'
+                      data-ng-src='{{item.avatar}}'
+                      style='width: 30px; height: 30px; margin: 0 auto;
+                      display: block;' />
+                  </td>
+                  <td>
+                    <a href='#'>{{item.username}}</a>
+                  </td>
+                  <td style='text-align: center;'>
+                    <span class='dropdown'
+                      data-ng-if='item.id | inArray:focus.administrators'>
+                      <a class='dropdown-toggle'
+                        style='cursor: pointer;'>
+                          <!-- Participant || Administrator -->
+                          <!--
+                          {{ (item.id | inArray:focus.administrators) && 'administrator' || 'participant' }}
+                          -->
+                          Administrator
+                      </a>
+                      <ul class='dropdown-menu'>
+                        <li>
+                          <a href='#'
+                            data-ng-click='changePrivileges(focus, item.id, false)'>
+                            <span
+                              class='pull-left'
+                              style='color: #f00;'>
+                                &#x2718;
+                            </span>
+                            <span class='pull-right'>
+                              Participant
+                            </span>
+                            <div class='clear-div'></div>
+                          </a>
+                        </li>
+                        <li class='disabled'>
+                          <a href='#'>
+                              <span
+                                class='pull-left'
+                                style='color: #428BCA;'>
+                                  &#x2714;
+                              </span>
+                              <span class='pull-right'>
+                                Administrator
+                              </span>
+                              <div class='clear-div'></div>
+                          </a>
+                        </li>
+                      </ul>
+                    </span>
+
+
+                    <span class='dropdown'
+                      data-ng-if='!(item.id | inArray:focus.administrators)'>
+                      <a class='dropdown-toggle'
+                        style='cursor: pointer;'>
+                          Participant
+                      </a>
+                      <ul class='dropdown-menu'>
+                        <li class='disabled'>
+                          <a href='#'>
+                            <span
+                              class='pull-left'
+                              style='color: #428BCA;'>
+                                &#x2714;
+                            </span>
+                            <span class='pull-right'>
+                              Participant
+                            </span>
+                            <div class='clear-div'></div>
+                          </a>
+                        </li>
+                        <li>
+                          <a href='#'
+                            data-ng-click='changePrivileges(focus, item.id, true)'>
+                              <span
+                                class='pull-left'
+                                style='color: #f00;'>
+                                  &#x2718;
+                              </span>
+                              <span class='pull-right'>
+                                Administrator
+                              </span>
+                              <div class='clear-div'></div>
+                          </a>
+                        </li>
+                      </ul>
+                    </span>
+
+
+                  </td>
+                  <td>
+                    <button class='btn btn-sm btn-square btn-danger'
+                      style='width: 100%;'
+                      data-ng-click='removeUser(item.id)'>
+                      <i class='glyphicon glyphicon-remove'></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class='clear-20'></div>
+          <hr style='border-top: 1px dashed #222; width: 80%; margin: 0 auto;' />
+          <div class='clear-20'></div>
+
+          <div class='col-xs-10 col-xs-offset-1'>
+            <span class='pull-right'>
+              <button class='pull-right btn btn-square btn-danger'
+                data-ng-click='deleteItem(focus, "task")'>
+                <i class='glyphicon glyphicon-trash'></i>
+                Delete
+              </button>
+            </span>
+
+            <div class='clear-div'></div>
+          </div>
+
+          <div class='clear-100'></div>
+        </div>
+
+        <div class='clear-div'></div>
+      </div>
+    </div>
+
+    <script type="text/ng-template" id="objective-modal.html">
+      <div class="modal-header">
+          <h3 class='pull-left'>{{ modal.header }}</h3>
+          <button class="close" ng-click="close()" type="button">&times;</button>
+          <div class='clear-div'></div>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" role="form" data-ng-submit='confirmCreate()'>
+          <div class="form-group">
+            <label class="col-xs-2 control-label">Name</label>
+            <div class="col-xs-10">
+              <input type="text"
+                class="form-control"
+                data-ng-model="objective.title"
+                autofocus>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+          <button class="pull-left btn btn-square btn-default" data-ng-click="close()">
+            <i class='glyphicon glyphicon-remove'></i>
+            Cancel
+          </button>
+
+          <button class="btn btn-square btn-primary" data-ng-click="confirmCreate()">
+            <i class='glyphicon glyphicon-plus'></i>
+            Create
+          </button>
+      </div>
+    </script>
+
+    <script type="text/ng-template" id="delete-modal.html">
+      <div class="modal-header">
+          <h3 class='pull-left'>{{ modal.header }}</h3>
+          <button class="close" ng-click="close()" type="button">&times;</button>
+          <div class='clear-div'></div>
+      </div>
+      <div class="modal-body">
+          {{ modal.body }}
+      </div>
+      <div class="modal-footer">
+          <button class="pull-left btn btn-square btn-default" data-ng-click="close()">
+            <i class='glyphicon glyphicon-remove'></i>
+            Cancel
+          </button>
+
+          <button class="btn btn-square btn-info"
+            data-ng-click="confirmArchive()"
+            data-ng-hide="item.archived">
+            <i class='glyphicon glyphicon-folder-open'></i>
+            Archive
+          </button>
+
+          <button class="btn btn-square btn-primary"
+            data-ng-click="unArchive()"
+            data-ng-hide="!item.archived">
+            <i class='glyphicon glyphicon-folder-open'></i>
+            Restore
+          </button>
+
+          <button class="btn btn-square btn-danger" data-ng-click="confirmDelete()">
+            <i class='glyphicon glyphicon-trash'></i>
+            Delete
+          </button>
+      </div>
+    </script>
+
+    <script src='/assets/vendor/noToolbox/dist/js/noToolbox.js'></script>
+    <script src='/assets/vendor/jquery-ui/ui/jquery-ui.js'></script>
+    <script src='/assets/vendor/angular-ui-calendar/src/calendar.js'></script>
+    <script src='/assets/vendor/fullcalendar/fullcalendar.js'></script>
+    <script src='/assets/js/app.js'></script>
+  </body>
+</html>

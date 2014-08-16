@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>Prod Design</title>
+    <link rel='stylesheet' href='/assets/vendor/noToolbox/dist/css/noToolbox.css' />
+    <link rel='stylesheet' href='/assets/vendor/bootflat/css/bootflat-square.css' />
+    <link rel='stylesheet' href='/assets/vendor/fullcalendar/fullcalendar.css' />
+    <link rel='stylesheet' href='/assets/css/app.css' />
+  </head>
+  <body data-ng-controller='AppCtrl'>
+
+    <!--
+    <div class='container wide' style='display: block;'>
+      <div class='row wide' style='display: block;'>
+    -->
+    <div class='container wide' style='display: table;'>
+      <div class='row' style='height: 100%; display: table-row;'>
+
+        <div class='col-xs-12 content-left' style='float: none;'>
+          <div class='clear-20'></div>
+
+          <div class='toolbar col-xs-10 col-xs-offset-1'>
+            <button class='btn btn-sm btn-square btn-primary'
+              data-ng-click='createEvent()'
+              data-toggle-sidebar='open'>
+              <i class='glyphicon glyphicon-plus'></i>
+              Create Event
+            </button>
+          </div>
+
+          <div class='clear-20'></div>
+
+          <!--
+          -->
+          <div
+            class='calendar'
+            calender='myCalendar'
+            ui-calendar='uiConfig.calendar'
+            data-ng-model='events'>
+          </div>
+        </div>
+
+        <div class='col-xs-0 content-right'
+          style='float: none;'>
+          <div class='clear-20'></div>
+
+          <div class='toolbar col-xs-10 col-xs-offset-1'>
+            <!--
+            -->
+            <button class='btn btn-sm btn-square btn-danger'
+              data-ng-click='focus=null'
+              data-toggle-sidebar>
+              <i class='glyphicon glyphicon-remove'></i>
+              Close
+            </button>
+
+            <button class='btn btn-sm btn-square btn-info'
+              data-toggle-sidebar>
+              <i class='glyphicon glyphicon-refresh'></i>
+              Save Changes
+            </button>
+          </div>
+
+          <div class='clear-20'></div>
+
+          <div class='col-xs-10 col-xs-offset-1'>
+            <h4 class='pull-left text-bold'>
+              Basic
+            </h4>
+
+            <div class='clear-div'></div>
+          </div>
+
+          <div class='col-xs-10 col-xs-offset-1 edit-container'>
+
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-3 control-label">
+                Title
+                </label>
+                <div class="col-sm-9">
+                  <input type="text"
+                    class="form-control form-control-square"
+                    placeholder="Title"
+                    data-ng-model='focus.title'>
+                </div>
+              </div>
+
+              <div class='form-group'>
+                <label class='col-xs-3 control-label'>
+                  Archived
+                </label>
+                <div class='col-xs-3'
+                  style='text-align: center; padding-top: 5px;'>
+                    <input type='checkbox'
+                      data-ng-model='focus.archived' />
+                </div>
+              </div>
+
+              <div class='form-group'>
+                <label class='col-xs-3 control-label'>
+                  All Day
+                </label>
+                <div class='col-xs-3'
+                  style='text-align: center; padding-top: 5px;'>
+                    <input type='checkbox'
+                      style='width: 100%;'
+                      data-ng-model='focus.allDay' />
+                </div>
+              </div>
+
+              <div class="form-group"
+                data-ng-if='!focus.allDay'>
+                <label class="col-xs-3 control-label">
+                  Start
+                </label>
+                <div class="col-md-5 col-xs-9">
+                  <p class='input-group'>
+                    <input type="text"
+                      class="input-sm form-control form-control-square"
+                      is-open="opened"
+                      datepicker-options="dateOptions"
+                      datepicker-popup="dd-MMMM-yyyy"
+                      data-ng-disabled='disabled'
+                      data-ng-required="true"
+                      data-ng-model="focus.start"
+                      close-text="Close" />
+
+                    <span class="input-group-btn">
+                      <button class="btn btn-sm btn-square btn-default"
+                        data-ng-click="open($event)"
+                        data-ng-disabled='disabled'>
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </button>
+                    </span>
+                  </p>
+                </div>
+                <div class="col-md-4 col-md-offset-0 col-xs-9 col-xs-offset-3">
+                  <div
+                    class='time-picker'
+                    style="width: 135px; margin: 0 auto;"
+                    data-ng-if='focus.start'
+                    data-ng-disabled='disabled'>
+                      <timepicker
+                        hour-step="1"
+                        minute-step="1"
+                        show-meridian="true"
+                        data-ng-disabled='disabled'
+                        data-ng-model="focus.start">
+                      </timepicker>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group"
+                data-ng-if='!focus.allDay'>
+                <label class="col-xs-3 control-label">
+                  End
+                </label>
+                <div class="col-md-5 col-xs-9">
+                  <p class='input-group'>
+                    <input type="text"
+                      class="input-sm form-control form-control-square"
+                      is-open="endOpen"
+                      datepicker-options="dateOptions"
+                      datepicker-popup="dd-MMMM-yyyy"
+                      data-ng-disabled='disabled'
+                      data-ng-required="true"
+                      data-ng-model="focus.end"
+                      close-text="Close" />
+
+                    <span class="input-group-btn">
+                      <button class="btn btn-sm btn-square btn-default"
+                        data-ng-click="open($event)"
+                        data-ng-disabled='disabled'>
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </button>
+                    </span>
+                  </p>
+                </div>
+                <div class="col-md-4 col-md-offset-0 col-xs-9 col-xs-offset-3">
+                  <div
+                    class='time-picker'
+                    style="width: 135px; margin: 0 auto;"
+                    data-ng-if='focus.start'
+                    data-ng-disabled='disabled'>
+                      <timepicker
+                        hour-step="1"
+                        minute-step="1"
+                        show-meridian="true"
+                        data-ng-disabled='disabled'
+                        data-ng-model="focus.end">
+                      </timepicker>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class='clear-20'></div>
+          <hr style='border-top: 1px dashed #222; width: 80%; margin: 0 auto;' />
+          <div class='clear-20'></div>
+      </div>
+    </div>
+
+    <script src='/assets/vendor/noToolbox/dist/js/noToolbox.js'></script>
+    <script src='/assets/vendor/jquery-ui/ui/jquery-ui.js'></script>
+    <script src='/assets/vendor/angular-ui-calendar/src/calendar.js'></script>
+    <script src='/assets/vendor/fullcalendar/fullcalendar.js'></script>
+    <script src='/assets/js/app.js'></script>
+  </body>
+</html>

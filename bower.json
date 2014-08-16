@@ -1,0 +1,11 @@
+{
+  "name": "prod-design",
+  "version": "0.0.0",
+  "dependencies": {
+    "noToolbox": "latest",
+    "store": "latest",
+    "jquery-resizable-columns": "~0.0.1",
+    "angular-ui-sortable": "~0.12.2",
+    "angular-ui-calendar": "0.8.0"
+  }
+}

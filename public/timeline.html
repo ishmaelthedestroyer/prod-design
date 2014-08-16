@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>Prod Design</title>
+    <link rel='stylesheet' href='/assets/vendor/noToolbox/dist/css/noToolbox.css' />
+    <link rel='stylesheet' href='/assets/vendor/bootflat/css/bootflat-square.css' />
+    <link rel='stylesheet' href='/assets/css/app.css' />
+  </head>
+  <body data-ng-controller='AppCtrl'>
+    <div class='container wide' style='display: table;'>
+      <div class='row' style='height: 100%; display: table-row;'>
+
+        <div class='col-xs-6 content-left' style='display: table-cell; float: none;'>
+
+          <header class='header'>
+            <h1>{{project.title}}</h1>
+          </header>
+
+          <div class='project-toolbar col-xs-8 col-xs-offset-2'>
+            <button class='btn btn-sm btn-square btn-default'
+               data-ng-click='newObjective()'>
+              <i class='glyphicon glyphicon-plus'>
+              </i>
+              <span>
+                New Objective
+              </span>
+            </button>
+
+            <!--
+            <button class='btn btn-sm btn-square btn-default'>
+              <i class='glyphicon glyphicon-comment'>
+              </i>
+              <span>
+                Messages
+              </span>
+            </button>
+
+            <button class='btn btn-sm btn-square btn-default'>
+              <i class='glyphicon glyphicon-question-sign'>
+              </i>
+              <span>Quick Help</span>
+            </button>
+            -->
+
+            <span class='objective-filter pull-right'>
+              <a href='#'
+                data-ng-click='setFilter($event, "")'
+                data-ng-class='{active: filter == ""}'>
+                All
+              </a>
+              &bull;
+              <a href='#'
+                data-ng-click='setFilter($event, "active")'
+                data-ng-class='{active: filter == "active"}'>
+                Active
+              </a>
+              &bull;
+              <a href='#'
+                style='margin-right: 10px;'
+                data-ng-click='setFilter($event, "complete")'
+                data-ng-class='{active: filter == "complete"}'>
+                Complete
+              </a>
+              <label style='cursor: pointer;'>
+                <input type='checkbox' data-ng-model='showArchived' />
+                Show Archived
+              </label>
+            </span>
+
+          </div>
+
+          <div class='objective-header col-xs-8 col-xs-offset-2'>
+            <p>
+              <span class='pull-left'>
+                Objective
+              </span>
+              <span class='pull-right'>
+                Complete / Total
+                <span class='text-divider text-bold'>&bull;</span>
+                Edit
+                <span class='text-divider text-bold'>&bull;</span>
+                Archive
+              </span>
+            </p>
+          </div>
+
+          <ul class='objective-list col-xs-8 col-xs-offset-2'>
+            <li data-ng-repeat='objective in objectives |
+                orderBy : "created" : true'
+              data-ng-class='{archived: objective.archived}'
+              data-ng-hide='!showArchived && objective.archived'>
+
+              <div class="panel panel-default"
+                data-ng-click="changeFocus(item, 'objective')"
+                style='padding: 0; margin-bottom: 10px;'>
+                <div class="panel-heading">
+
+                  <h4 class="panel-title">
+
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseObjective-{{$index}}">
+                      <i class="glyphicon collapse-expand"></i>
+                    </a>
+
+                    <span class='objective-title'>
+                      <b>{{objective.title}}</b>
+                    </span>
+
+                    <span class='objective-controls'>
+                      <small style='font-size: 14px;'>
+                        <!-- filter tasks by objective, then retrieve and filter by active / complete filter, then filter by completed, then filter unarchived, get the length of remaining objects in array. next, filter tasks by objective again, filter by completed, filter by archived, get the length and add to the first number -->
+                        <span ng-if='showArchived'>
+                          {{ (((tasks | filter : { objective: objective.id }) | filter: getFilter() | filter : { completed: true }) | filter: { archived: false }).length + (((tasks | filter : { objective: objective.id }) | filter: getFilter() | filter : { completed: true }) | filter: { archived: true }).length}}
+                        </span>
+
+                        <span ng-if='!showArchived'>
+                          {{ (((tasks | filter : { objective: objective.id }) | filter: getFilter() | filter : { completed: true }) | filter: { archived: false }).length }}
+                        </span>
+
+                        /
+
+                        <!-- filter tasks by objective, then retrieve and filter by active / complete filter, then filter unarchived, get the length of remaining objects in array. next, filter tasks by objective again, filter by archived, get the length and add to the first number -->
+                        <span ng-if='showArchived'>
+                          {{ ((tasks | filter : { objective: objective.id }) | filter: getFilter() | filter: { archived: false }).length + ((tasks | filter : { objective: objective.id }) | filter: getFilter() | filter: { archived: true }).length }}
+                        </span>
+
+                        <span ng-if='!showArchived'>
+                          {{ ((tasks | filter : { objective: objective.id }) | filter: getFilter() | filter: { archived: false }).length }}
+                        </span>
+                      </small>
+
+                      <span class='text-divider-small text-bold'></span>
+
+                      <i class='glyphicon glyphicon-edit'></i>
+
+                      <span class='text-divider-small text-bold'></span>
+
+                      <i class='glyphicon glyphicon-remove'
+                        style='cursor: pointer;'
+                        data-ng-click='deleteItem(objective, "objective")'>
+                      </i>
+                    </span>
+                  </h4>
+                </div>
+                <div id="collapseObjective-{{$index}}" class="panel-collapse collapse in">
+                  <div class="panel-body">
+                    <ul class='task-list task-list-{{$index}}'>
+
+                      <li class='new-task-li'>
+
+                        <i class='glyphicon glyphicon-plus'
+                          style='position: absolute; top: 0; left: 0; width: 40px; height: 40px;
+                          text-align: center; vertical-align: center; display: inline-block;
+                          padding: 10px 0 0 0; color: #d9d9d9;'>
+                        </i>
+
+                        <form data-ng-submit='createNewTask(objective, newTask[$index], $index)'>
+                          <input class='new-task'
+                            type='text'
+                            data-ng-model='newTask[$index]'
+                            placeholder='Add a task here.' />
+                        </form>
+                      </li>
+
+                      <!--
+                      <li data-ng-repeat='task in tasks |
+                        filter: getFilter() |
+                        filter: { objective: objective.id } |
+                        orderBy : "created" : true'
+                        data-ng-class='{completed: task.completed, editing: task == editFocus}'
+                        data-ng-hide='!showArchived && task.archived'
+                        data-ui-sortable='sortableOptions'
+                        data-ng-model='tasks'>
+                      -->
+
+                      <li data-ng-repeat='task in tasks |
+                          filter: getFilter() |
+                          filter: { objective: objective.id } |
+                          orderBy : "created" : true'
+                        data-ng-class='{
+                          completed: task.completed,
+                          editing: task == editFocus,
+                          archived: task.archived,
+                          focused: task == focus
+                          }'
+                        data-ng-hide='!showArchived && task.archived'>
+
+                        <span class='task-create-attachment-wrapper'>
+                          <button class='task-create-attachment btn btn-square btn-success'>
+                            +
+                          </button>
+                        </span>
+
+                        <!--
+                        <span
+                          class='task-due-date label'
+                          data-ng-if='!task.completed'
+                          data-ng-class="{true:'label-warning', false:'label-danger'}[task.deadline > now]">
+                          {{ task.deadline | date:'mediumDate'}}
+                        </span>
+                        -->
+
+                        <div class='task-badges'>
+                          <span
+                            class='task-due-date label label-square'
+                            data-ng-if='!task.completed'
+                            data-ng-class="{ 'label-warning': task.deadline.getTime() >= now.getTime(), 'label-danger': task.deadline.getTime() < now.getTime() }">
+                            {{ task.deadline | date:'mediumDate'}}
+                          </span>
+
+                          <span class='task-attachment label label-square label-primary'
+                            data-ng-if='task.attachments > 0'>
+                            <!-- TODO: pluralize attachments -->
+                            {{ task.attachments }} attachment(s)
+                          </span>
+                        </div>
+
+                        <div class='task-item'>
+                          <input
+                            class='toggle'
+                            type='checkbox'
+                            data-ng-model='task.completed' />
+                          <label class='task-title'
+                            ng-dblclick='editItem(task)'>
+                              <span class='task-priority'
+                                data-ng-class='{
+                                  "priority-high": task.priority == 1,
+                                  "priority-medium": task.priority == 2,
+                                  "priority-low": task.priority == 3
+                                }'>
+                                <b>(</b> {{task.priority}}<b> )</b>
+                              </span>
+                              {{task.title}}
+                          </label>
+
+                          <span class='task-controls'>
+
+                          <!--
+                            <small><b>[</b>{{task.priority}}<b>]</b></small>
+                            -->
+
+                            <span class='text-divider-small text-bold'></span>
+
+                            <i class='glyphicon glyphicon-edit'
+                              data-ng-click='setFocus(task)'
+                              style='cursor: pointer;'>
+
+                            </i>
+
+                            <span class='text-divider-small text-bold'></span>
+
+                            <i class='glyphicon glyphicon-remove'
+                              style='cursor: pointer;'
+                              data-ng-click='deleteItem(task, "task")'>
+
+                            </i>
+                          </span>
+
+                          <!--
+                          <button class='destroy' ng-click='removeTodo(todo)'></button>
+                          -->
+
+                        </div>
+                        <form data-ng-submit='saveEdit(task)'>
+                          <input class='edit-task'
+                            data-ng-model='task.title'
+                            data-no-escape='cancelEdit(task)'
+                            data-ng-blur='saveEdit(task)'
+                            data-no-focus='task == editFocus' />
+                        </form>
+                        <!--
+                        <p>{{task.title}}</p>
+                        -->
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+            </li>
+          </ul>
+        </div>
+
+        <div class='col-xs-6 content-right'
+          style='display: table-cell; float: none;'
+          data-ng-hide='!focus'>
+
+          <header class='header'>
+            <div class='clear-10'></div>
+            <h3>{{focus.title}}</h3>
+          </header>
+
+          <div class='col-xs-10 col-xs-offset-1'>
+            <h4 class='pull-left text-bold'>
+              Basic
+            </h4>
+
+            <div class='clear-div'></div>
+          </div>
+
+          <div class='col-xs-10 col-xs-offset-1 edit-container'>
+
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-3 control-label">
+                Title
+                </label>
+                <div class="col-sm-9">
+                  <input type="text"
+                    class="form-control form-control-square"
+                    placeholder="Title"
+                    data-ng-model='focus.title'>
+                </div>
+              </div>
+
+              <div class='form-group'>
+                <label class='col-xs-3 control-label'>
+                  Complete
+                </label>
+                <div class='col-xs-3'
+                  style='text-align: center; padding-top: 5px;'>
+                    <input type='checkbox'
+                      style='width: 100%;'
+                      data-ng-model='focus.completed' />
+                </div>
+                <label class='col-xs-3 control-label'>
+                  Archived
+                </label>
+                <div class='col-xs-3'
+                  style='text-align: center; padding-top: 5px;'>
+                    <input type='checkbox'
+                      data-ng-model='focus.archived' />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-xs-3 control-label">
+                  Priority
+                </label>
+                <div class="col-md-3 col-xs-4">
+                  <button type='button'
+                    class='btn btn-sm btn-square btn-default'
+                    data-ng-disabled='focus.priority <= 1'
+                    data-ng-click='changePriority(-1)'>
+                      <i class='glyphicon glyphicon-chevron-up'></i>
+                  </button>
+
+                  <button type='button'
+                    class='btn btn-sm btn-square btn-default'
+                    data-ng-disabled='focus.priority >= 3'
+                    data-ng-click='changePriority(1)'>
+                      <i class='glyphicon glyphicon-chevron-down'></i>
+                  </button>
+                </div>
+                <div class="col-md-6 col-xs-5">
+                  <input type='text'
+                    disabled='disabled'
+                    data-ng-model='focus.priority'
+                    style='text-align: center; margin: 0 auto;'
+                    class='input-sm form-control form-control-square' />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-xs-3 control-label">
+                  Deadline
+                </label>
+                <div class="col-md-5 col-xs-9">
+                  <p class='input-group'>
+                    <input type="text"
+                      class="input-sm form-control form-control-square"
+                      is-open="opened"
+                      datepicker-options="dateOptions"
+                      datepicker-popup="dd-MMMM-yyyy"
+                      data-ng-change='updateDeadline()'
+                      data-ng-disabled='disabled'
+                      data-ng-required="true"
+                      data-ng-model="focus.deadline"
+                      close-text="Close" />
+
+                    <span class="input-group-btn">
+                      <button class="btn btn-sm btn-square btn-default"
+                        data-ng-click="open($event)"
+                        data-ng-disabled='disabled'>
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </button>
+                    </span>
+                  </p>
+                </div>
+                <div class="col-md-4 col-md-offset-0 col-xs-9 col-xs-offset-3">
+                  <!--
+                  -->
+                  <div
+                    class='time-picker'
+                    style="width: 135px; margin: 0 auto;"
+                    data-ng-if='focus.deadline'
+                    data-ng-disabled='disabled'>
+                      <timepicker
+                        hour-step="1"
+                        minute-step="1"
+                        show-meridian="true"
+                        data-ng-disabled='disabled'
+                        data-ng-model="focus.deadline"
+                        data-ng-change='updateDeadline()'>
+                      </timepicker>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+            <!--
+            <p>
+              Title
+
+              <span class='pull-right'>
+                {{focus.title}}
+              </span>
+            </p>
+            <p>
+              <label style='cursor: pointer; font-weight: normal; width: 100%;'>
+                Complete
+                <input type='checkbox'
+                  class='pull-right'
+                  data-ng-model='focus.completed' />
+              </label>
+            </p>
+            <p>
+              <label style='cursor: pointer; font-weight: normal; width: 100%;'>
+                Archived
+                <input type='checkbox'
+                  class='pull-right'
+                  data-ng-model='focus.archived' />
+              </label>
+            </p>
+            <p>
+              Priority
+              <span class='pull-right'>
+                {{focus.priority}}
+              </span>
+            </p>
+            <p>
+              Deadline
+              <span class='pull-right'>
+                <b>{{ (focus.deadline | date:'MMM d, y h:mm a') || 'n / a' }}</b>
+              </span>
+            </p>
+            <p>
+              Estimated Time
+              <span class='pull-right'>
+                <b>{{ (focus.estimatedTime) || 'n / a' }}</b>
+              </span>
+            </p>
+            -->
+
+          </div>
+
+          <div class='clear-20'></div>
+          <hr style='border-top: 1px dashed #222; width: 80%; margin: 0 auto;' />
+          <div class='clear-20'></div>
+
+          <div class='col-xs-10 col-xs-offset-1'>
+            <h4 class='pull-left text-bold'>
+              Assigned
+            </h4>
+
+            <div class='clear-div'></div>
+          </div>
+
+          <div class='col-xs-10 col-xs-offset-1 edit-container'>
+            <table class='table table-hover'>
+              <thead>
+                <tr>
+                  <th style='width: 15%; text-align: center;'> - </th>
+                  <th style='width: 70%' class='dropdown'>
+                    <a class='dropdown-toggle'
+                      style='cursor: pointer;'>
+                      Add User
+                    </a>
+                    <ul class='dropdown-menu'>
+                      <li data-ng-repeat='item in project.participants | mapKeys | dedup:focus.assigned | mapUserList'>
+                        <a href='#'
+                          data-ng-click='assignUser(focus, item.id)'>
+                          <img class='img-circle'
+                            data-ng-src='{{item.avatar}}'
+                            style='width: 30px; height: 30px; margin-right: 5px;' />
+
+                          {{ item.username }}
+                        </a>
+                      </li>
+                      <li
+                        class='disabled'
+                        data-ng-if='!(project.participants | mapKeys | dedup:focus.assigned | mapUserList).length'>
+                        <a>There are other users in this projects.</a>
+                      </li>
+                    </ul>
+                  </th>
+                  <th style='width: 15%; text-align: center;'> - </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-ng-repeat='item in mapUserList(focus.assigned)'>
+                  <td>
+                    <img class='img-circle'
+                      data-ng-src='{{item.avatar}}'
+                      style='width: 30px; height: 30px; margin: 0 auto;
+                      display: block;' />
+                  </td>
+                  <td>
+                    <a href='#'>{{item.username}}</a>
+                  </td>
+                  <td style='width: 15%'>
+                    <button class='btn btn-sm btn-square btn-danger'
+                      style='width: 100%;'
+                      data-ng-click='removeUser(item.id)'>
+                      <i class='glyphicon glyphicon-remove'></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class='clear-20'></div>
+          <hr style='border-top: 1px dashed #222; width: 80%; margin: 0 auto;' />
+          <div class='clear-20'></div>
+
+          <div class='col-xs-10 col-xs-offset-1'>
+            <h4 class='pull-left text-bold'>
+              Tags
+            </h4>
+
+            <div class='clear-div'></div>
+          </div>
+
+          <div class='col-xs-10 col-xs-offset-1 edit-container'>
+            <table class='table table-hover'>
+              <tbody>
+                <tr>
+                  <td style='width: 70%'>
+                    <form data-ng-submit='addTag()'>
+                      <input class='input-sm form-control form-control-square'
+                        placeholder='New tag'
+                        data-ng-trim='true'
+                        data-ng-model='newTag' />
+                    </form>
+                  </td>
+                  <td style='width: 30%; text-align: center;'>
+                    <!--
+                    <button class='btn btn-sm btn-square btn-danger'>
+                      <i class='glyphicon glyphicon-remove'></i>
+                    </button>
+                    -->
+                    <button class='btn btn-sm btn-square btn-primary'
+                      style='width: 100%;'
+                      data-ng-click='addTag()'>
+                      <i class='glyphicon glyphicon-plus'></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr data-ng-repeat='item in focus.tags'>
+                  <td>
+                    <span class='label label-lg label-square'
+                      style='background-color: #fff;
+                      color: #222; padding: 5px 10px;
+                      border: 1px solid #222; font-size: 12px;'>
+                      <i class='glyphicon glyphicon-tag'></i>
+                      {{item}}
+                    </span>
+                  </td>
+                  <td style='width: 30%; text-align: center;'>
+                    <button class='btn btn-sm btn-square btn-danger'
+                      style='width: 100%;'
+                      data-ng-click='removeTag(item)'>
+                      <i class='glyphicon glyphicon-remove'></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class='clear-20'></div>
+          <hr style='border-top: 1px dashed #222; width: 80%; margin: 0 auto;' />
+          <div class='clear-20'></div>
+
+          <div class='col-xs-10 col-xs-offset-1'>
+            <h4 class='pull-left text-bold'>
+              Schedule
+            </h4>
+
+            <!--
+            <span class='pull-right'>
+              <button type='button' class='btn btn-square btn-warning'>
+                <span class='glyphicon glyphicon-edit'></span>
+                Edit
+              </button>
+            </span>
+            -->
+
+            <div class='clear-div'></div>
+          </div>
+
+          <div class='col-xs-10 col-xs-offset-1 edit-container'>
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-xs-3 control-label">
+                  Scheduled Start
+                </label>
+                <div class="col-md-5 col-xs-9">
+                  <p class='input-group'>
+                    <input type="text"
+                      class="input-sm form-control form-control-square"
+                      is-open="scheduledStartOpen"
+                      datepicker-options="dateOptions"
+                      datepicker-popup="dd-MMMM-yyyy"
+                      data-ng-disabled='disabled'
+                      data-ng-required="true"
+                      data-ng-change='updateSchedule()'
+                      data-ng-model="focus.scheduledStart"
+                      close-text="Close" />
+
+                    <span class="input-group-btn">
+                      <button class="btn btn-sm btn-square btn-default"
+                        data-ng-click="open($event)"
+                        data-ng-disabled='disabled'>
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </button>
+                    </span>
+                  </p>
+                </div>
+                <div class="col-md-4 col-md-offset-0 col-xs-9 col-xs-offset-3">
+                  <div
+                    class='time-picker'
+                    style="width: 135px; margin: 0 auto;"
+                    data-ng-if='focus.scheduledStart'
+                    data-ng-disabled='disabled'>
+                      <timepicker
+                        hour-step="1"
+                        minute-step="1"
+                        show-meridian="true"
+                        data-ng-disabled='disabled'
+                        data-ng-change='updateSchedule()'
+                        data-ng-model="focus.scheduledStart">
+                      </timepicker>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-xs-3 control-label">
+                  Scheduled End
+                </label>
+                <div class="col-md-5 col-xs-9">
+                  <p class='input-group'>
+                    <input type="text"
+                      class="input-sm form-control form-control-square"
+                      is-open="scheduledEndOpen"
+                      min='focus.scheduledStart'
+                      datepicker-options="dateOptions"
+                      datepicker-popup="dd-MMMM-yyyy"
+                      data-ng-disabled='disabled'
+                      data-ng-required="true"
+                      data-ng-change='updateSchedule()'
+                      data-ng-model="focus.scheduledEnd"
+                      close-text="Close" />
+
+                    <span class="input-group-btn">
+                      <button class="btn btn-sm btn-square btn-default"
+                        data-ng-click="open($event)"
+                        data-ng-disabled='disabled'>
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </button>
+                    </span>
+                  </p>
+                </div>
+                <div class="col-md-4 col-md-offset-0 col-xs-9 col-xs-offset-3">
+                  <div
+                    class='time-picker'
+                    style="width: 135px; margin: 0 auto;"
+                    data-ng-if='focus.scheduledEnd'
+                    data-ng-disabled='disabled'>
+                      <timepicker
+                        hour-step="1"
+                        minute-step="1"
+                        show-meridian="true"
+                        data-ng-disabled='disabled'
+                        data-ng-change='updateSchedule()'
+                        data-ng-model="focus.scheduledEnd">
+                      </timepicker>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-xs-3 control-label">
+                  Actual Start
+                </label>
+                <div class="col-md-5 col-xs-9">
+                  <p class='input-group'>
+                    <input type="text"
+                      class="input-sm form-control form-control-square"
+                      is-open="actualStartOpen"
+                      datepicker-options="dateOptions"
+                      datepicker-popup="dd-MMMM-yyyy"
+                      data-ng-disabled='disabled'
+                      data-ng-required="true"
+                      data-ng-change='updateSchedule()'
+                      data-ng-model="focus.actualStart"
+                      close-text="Close" />
+
+                    <span class="input-group-btn">
+                      <button class="btn btn-sm btn-square btn-default"
+                        data-ng-click="open($event)"
+                        data-ng-disabled='disabled'>
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </button>
+                    </span>
+                  </p>
+                </div>
+                <div class="col-md-4 col-md-offset-0 col-xs-9 col-xs-offset-3">
+                  <div
+                    class='time-picker'
+                    style="width: 135px; margin: 0 auto;"
+                    data-ng-if='focus.actualStart'
+                    data-ng-disabled='disabled'>
+                      <timepicker
+                        hour-step="1"
+                        minute-step="1"
+                        show-meridian="true"
+                        data-ng-disabled='disabled'
+                        data-ng-model="focus.actualStart">
+                      </timepicker>
+                  </div>
+                </div>
+              </div>
+
+
+              <div class="form-group">
+                <label class="col-xs-3 control-label">
+                  Actual End
+                </label>
+                <div class="col-md-5 col-xs-9">
+                  <p class='input-group'>
+                    <input type="text"
+                      class="input-sm form-control form-control-square"
+                      is-open="actualEndOpen"
+                      min='focus.actualStart'
+                      datepicker-options="dateOptions"
+                      datepicker-popup="dd-MMMM-yyyy"
+                      data-ng-disabled='disabled'
+                      data-ng-required="true"
+                      data-ng-model="focus.actualEnd"
+                      close-text="Close" />
+
+                    <span class="input-group-btn">
+                      <button class="btn btn-sm btn-square btn-default"
+                        data-ng-click="open($event)"
+                        data-ng-disabled='disabled'>
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </button>
+                    </span>
+                  </p>
+                </div>
+                <div class="col-md-4 col-md-offset-0 col-xs-9 col-xs-offset-3">
+                  <div
+                    class='time-picker'
+                    style="width: 135px; margin: 0 auto;"
+                    data-ng-if='focus.actualEnd'
+                    data-ng-disabled='disabled'>
+                      <timepicker
+                        hour-step="1"
+                        minute-step="1"
+                        show-meridian="true"
+                        data-ng-disabled='disabled'
+                        data-ng-model="focus.actualEnd">
+                      </timepicker>
+                  </div>
+                </div>
+              </div>
+
+            </form>
+          </div>
+
+          <div class='clear-20'></div>
+          <hr style='border-top: 1px dashed #222; width: 80%; margin: 0 auto;' />
+          <div class='clear-20'></div>
+
+          <div class='col-xs-10 col-xs-offset-1'>
+            <span class='pull-right'>
+              <button class='pull-right btn btn-square btn-danger'
+                data-ng-click='deleteItem(focus, "task")'>
+                <i class='glyphicon glyphicon-trash'></i>
+                Delete
+              </button>
+            </span>
+
+            <div class='clear-div'></div>
+          </div>
+
+          <div class='clear-100'></div>
+        </div>
+
+        <div class='clear-div'></div>
+      </div>
+    </div>
+
+    <script type="text/ng-template" id="objective-modal.html">
+      <div class="modal-header">
+          <h3 class='pull-left'>{{ modal.header }}</h3>
+          <button class="close" ng-click="close()" type="button">&times;</button>
+          <div class='clear-div'></div>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" role="form" data-ng-submit='confirmCreate()'>
+          <div class="form-group">
+            <label class="col-xs-2 control-label">Name</label>
+            <div class="col-xs-10">
+              <input type="text"
+                class="form-control"
+                data-ng-model="objective.title"
+                autofocus>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+          <button class="pull-left btn btn-square btn-default" data-ng-click="close()">
+            <i class='glyphicon glyphicon-remove'></i>
+            Cancel
+          </button>
+
+          <button class="btn btn-square btn-primary" data-ng-click="confirmCreate()">
+            <i class='glyphicon glyphicon-plus'></i>
+            Create
+          </button>
+      </div>
+    </script>
+
+    <script type="text/ng-template" id="delete-modal.html">
+      <div class="modal-header">
+          <h3 class='pull-left'>{{ modal.header }}</h3>
+          <button class="close" ng-click="close()" type="button">&times;</button>
+          <div class='clear-div'></div>
+      </div>
+      <div class="modal-body">
+          {{ modal.body }}
+      </div>
+      <div class="modal-footer">
+          <button class="pull-left btn btn-square btn-default" data-ng-click="close()">
+            <i class='glyphicon glyphicon-remove'></i>
+            Cancel
+          </button>
+
+          <button class="btn btn-square btn-info"
+            data-ng-click="confirmArchive()"
+            data-ng-hide="item.archived">
+            <i class='glyphicon glyphicon-folder-open'></i>
+            Archive
+          </button>
+
+          <button class="btn btn-square btn-primary"
+            data-ng-click="unArchive()"
+            data-ng-hide="!item.archived">
+            <i class='glyphicon glyphicon-folder-open'></i>
+            Restore
+          </button>
+
+          <button class="btn btn-square btn-danger" data-ng-click="confirmDelete()">
+            <i class='glyphicon glyphicon-trash'></i>
+            Delete
+          </button>
+      </div>
+    </script>
+
+    <script src='/assets/vendor/noToolbox/dist/js/noToolbox.js'></script>
+    <script src='/assets/vendor/jquery-ui/ui/jquery-ui.js'></script>
+    <script src='/assets/js/app.js'></script>
+  </body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>Prod Design</title>
+    <link rel='stylesheet' href='/assets/vendor/noToolbox/dist/css/noToolbox.css' />
+    <link rel='stylesheet' href='/assets/vendor/bootflat/css/bootflat-square.css' />
+    <link rel='stylesheet' href='/assets/css/app.css' />
+  </head>
+  <body data-ng-controller='AppCtrl'>
+    <div class='container'>
+      <div class='row'>
+
+        <header class='header'>
+          <h1>{{project.title}}</h1>
+        </header>
+
+        <div class='project-toolbar col-xs-8 col-xs-offset-2'>
+          <button class='btn btn-sm btn-square btn-default'>
+            <i class='glyphicon glyphicon-plus'>
+            </i>
+            <span data-ng-click='newObjective()'>
+              New Objective
+            </span>
+          </button>
+
+          <!--
+          <button class='btn btn-sm btn-square btn-default'>
+            <i class='glyphicon glyphicon-question-sign'>
+            </i>
+            <span>Quick Help</span>
+          </button>
+          -->
+
+          <span class='objective-filter pull-right'>
+            <a href='#'
+              data-ng-click='setFilter($event, "")'
+              data-ng-class='{active: filter == ""}'>
+              All
+            </a>
+            &bull;
+            <a href='#'
+              data-ng-click='setFilter($event, "active")'
+              data-ng-class='{active: filter == "active"}'>
+              Active
+            </a>
+            &bull;
+            <a href='#'
+              data-ng-click='setFilter($event, "complete")'
+              data-ng-class='{active: filter == "complete"}'>
+              Complete
+            </a>
+            <label style='margin-left: 10px; cursor: pointer;'>
+              <input type='checkbox' data-ng-model='showArchived' />
+              Show Archived
+            </label>
+          </span>
+
+        </div>
+
+        <div class='objective-header col-xs-8 col-xs-offset-2'>
+          <p>
+            <span class='pull-left'>
+              Objective
+            </span>
+            <span class='pull-right'>
+              Complete / Total
+              <span class='text-divider text-bold'>&bull;</span>
+              Edit
+              <span class='text-divider text-bold'>&bull;</span>
+              Archive
+            </span>
+          </p>
+        </div>
+
+        <!--
+        <div class='objective-header col-xs-8 col-xs-offset-2'>
+          <div class='row'>
+            <div class='col-xs-3'>
+              <p>Task</p>
+            </div>
+          </div>
+        </div>
+        -->
+
+        <ul class='objective-list col-xs-8 col-xs-offset-2'>
+          <li data-ng-repeat='objective in objectives |
+              orderBy : "created" : true'
+            data-ng-class='{archived: objective.archived}'
+            data-ng-hide='!showArchived && objective.archived'>
+
+            <div class="panel panel-default"
+              data-ng-click="changeFocus(item, 'objective')"
+              style='padding: 0; margin-bottom: 10px;'>
+              <div class="panel-heading">
+
+                <h4 class="panel-title">
+
+                  <a data-toggle="collapse" data-parent="#accordion" href="#collapseObjective-{{$index}}">
+                    <i class="glyphicon collapse-expand"></i>
+                  </a>
+
+                  <b>{{objective.title}}</b>
+
+                  <span class='pull-right'>
+                    <small style='font-size: 14px;'>
+                      <!-- filter tasks by objective, then retrieve and filter by active / complete filter, then filter by completed, then filter unarchived, get the length of remaining objects in array. next, filter tasks by objective again, filter by completed, filter by archived, get the length and add to the first number -->
+                      <span ng-if='showArchived'>
+                        {{ (((tasks | filter : { objective: objective.id }) | filter: getFilter() | filter : { completed: true }) | filter: { archived: false }).length + (((tasks | filter : { objective: objective.id }) | filter: getFilter() | filter : { completed: true }) | filter: { archived: true }).length}}
+                      </span>
+
+                      <span ng-if='!showArchived'>
+                        {{ (((tasks | filter : { objective: objective.id }) | filter: getFilter() | filter : { completed: true }) | filter: { archived: false }).length }}
+                      </span>
+
+                      /
+
+                      <!-- filter tasks by objective, then retrieve and filter by active / complete filter, then filter unarchived, get the length of remaining objects in array. next, filter tasks by objective again, filter by archived, get the length and add to the first number -->
+                      <span ng-if='showArchived'>
+                        {{ ((tasks | filter : { objective: objective.id }) | filter: getFilter() | filter: { archived: false }).length + ((tasks | filter : { objective: objective.id }) | filter: getFilter() | filter: { archived: true }).length }}
+                      </span>
+
+                      <span ng-if='!showArchived'>
+                        {{ ((tasks | filter : { objective: objective.id }) | filter: getFilter() | filter: { archived: false }).length }}
+                      </span>
+                    </small>
+
+                    <span class='text-divider-small text-bold'>&nbsp;</span>
+
+                    <i class='glyphicon glyphicon-edit'></i>
+
+                    <span class='text-divider-small text-bold'>&nbsp;</span>
+
+                    <i class='glyphicon glyphicon-remove'
+                      style='cursor: pointer;'
+                      data-ng-click='deleteItem(objective, "objective")'>
+                    </i>
+                  </span>
+                </h4>
+              </div>
+              <div id="collapseObjective-{{$index}}" class="panel-collapse collapse in">
+                <div class="panel-body">
+                  <ul class='task-list task-list-{{$index}}'>
+
+                    <li class='new-task-li'>
+
+                      <i class='glyphicon glyphicon-plus'
+                        style='position: absolute; top: 0; left: 0; width: 40px; height: 40px;
+                        text-align: center; vertical-align: center; display: inline-block;
+                        padding: 10px 0 0 0; color: #d9d9d9;'>
+                      </i>
+
+                      <form data-ng-submit='createNewTask(objective, newTask[$index], $index)'>
+                        <input class='new-task'
+                          type='text'
+                          data-ng-model='newTask[$index]'
+                          placeholder='Add a task here.' />
+                      </form>
+                    </li>
+
+                    <!--
+                    <li data-ng-repeat='task in tasks |
+                      filter: getFilter() |
+                      filter: { objective: objective.id } |
+                      orderBy : "created" : true'
+                      data-ng-class='{completed: task.completed, editing: task == editFocus}'
+                      data-ng-hide='!showArchived && task.archived'
+                      data-ui-sortable='sortableOptions'
+                      data-ng-model='tasks'>
+                    -->
+
+                    <li data-ng-repeat='task in tasks |
+                        filter: getFilter() |
+                        filter: { objective: objective.id } |
+                        orderBy : "created" : true'
+                      data-ng-class='{completed: task.completed, editing: task == editFocus,
+                      archived: task.archived}'
+                      data-ng-hide='!showArchived && task.archived'>
+
+
+                      <div class='task-item'>
+                        <input
+                          class='toggle'
+                          type='checkbox'
+                          data-ng-model='task.completed' />
+                        <label class='task-title'
+                          ng-dblclick='editItem(task)'>
+                            {{task.title}}
+                        </label>
+
+                        <span class='task-controls'>
+
+                          <i class='glyphicon glyphicon-edit'></i>
+                          <span class='text-divider-small text-bold'>&nbsp;</span>
+                          <i class='glyphicon glyphicon-remove'
+                            style='cursor: pointer;'
+                            data-ng-click='deleteItem(task, "task")'>
+
+                          </i>
+                        </span>
+
+                        <!--
+                        <button class='destroy' ng-click='removeTodo(todo)'></button>
+                        -->
+
+                      </div>
+                      <form data-ng-submit='saveEdit(task)'>
+                        <input class='edit-task'
+                          data-ng-model='task.title'
+                          data-no-escape='cancelEdit(task)'
+                          data-ng-blur='saveEdit(task)'
+                          data-no-focus='task == editFocus' />
+                      </form>
+                      <!--
+                      <p>{{task.title}}</p>
+                      -->
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+          </li>
+        </ul>
+
+      </div>
+    </div>
+
+    <script type="text/ng-template" id="objective-modal.html">
+      <div class="modal-header">
+          <h3 class='pull-left'>{{ modal.header }}</h3>
+          <button class="close" ng-click="close()" type="button">&times;</button>
+          <div class='clear-div'></div>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" role="form" data-ng-submit='confirmCreate()'>
+          <div class="form-group">
+            <label class="col-xs-2 control-label">Name</label>
+            <div class="col-xs-10">
+              <input type="text"
+                class="form-control"
+                data-ng-model="objective.title"
+                autofocus>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+          <button class="pull-left btn btn-square btn-default" data-ng-click="close()">
+            <i class='glyphicon glyphicon-remove'></i>
+            Cancel
+          </button>
+
+          <button class="btn btn-square btn-primary" data-ng-click="confirmCreate()">
+            <i class='glyphicon glyphicon-plus'></i>
+            Create
+          </button>
+      </div>
+    </script>
+
+    <script type="text/ng-template" id="delete-modal.html">
+      <div class="modal-header">
+          <h3 class='pull-left'>{{ modal.header }}</h3>
+          <button class="close" ng-click="close()" type="button">&times;</button>
+          <div class='clear-div'></div>
+      </div>
+      <div class="modal-body">
+          {{ modal.body }}
+      </div>
+      <div class="modal-footer">
+          <button class="pull-left btn btn-square btn-default" data-ng-click="close()">
+            <i class='glyphicon glyphicon-remove'></i>
+            Cancel
+          </button>
+
+          <button class="btn btn-square btn-info"
+            data-ng-click="confirmArchive()"
+            data-ng-hide="item.archived">
+            <i class='glyphicon glyphicon-folder-open'></i>
+            Archive
+          </button>
+
+          <button class="btn btn-square btn-primary"
+            data-ng-click="unArchive()"
+            data-ng-hide="!item.archived">
+            <i class='glyphicon glyphicon-folder-open'></i>
+            Restore
+          </button>
+
+          <button class="btn btn-square btn-danger" data-ng-click="confirmDelete()">
+            <i class='glyphicon glyphicon-trash'></i>
+            Delete
+          </button>
+      </div>
+    </script>
+
+    <script src='/assets/vendor/noToolbox/dist/js/noToolbox.js'></script>
+    <script src='/assets/vendor/jquery-ui/ui/jquery-ui.js'></script>
+    <script src='/assets/js/app.js'></script>
+  </body>
+</html>

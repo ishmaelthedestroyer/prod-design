@@ -1,0 +1,26 @@
+{
+  "name": "",
+  "version": "0.0.0",
+  "homepage": "",
+  "description": "",
+  "main": "app.js",
+  "repository": "",
+  "keywords": [
+    "seed",
+    "express",
+    "angular",
+    "node"
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": ""
+    }
+  ],
+  "author": "ishmaelthedestroyer",
+  "dependencies": {
+    "express": "~3.3.4"
+  },
+  "devDependencies": {
+  }
+}
